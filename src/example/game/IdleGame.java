@@ -3,6 +3,8 @@ package example.game;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class IdleGame {
     private JButton Click;
@@ -12,8 +14,8 @@ public class IdleGame {
     private JPanel Game;
     private JTextField counter;
     private JButton buyButton;
-    private JTextField a10TextField;
-    private JTextField a0TextField;
+    private JTextField clickUpdatePrize;
+    private JTextField clickUpdate;
     private JTextField textField1;
     private JButton OKButton;
     private JTextField depositText;
@@ -21,46 +23,57 @@ public class IdleGame {
     private JTextField interestRateText;
     private JTextField finalRate;
     private JButton OKButton1;
+    private JTextField idleUpdate;
+    private JTextField idleUpdatePrize;
+    private JButton Buy;
+    private JTextField idleCount;
+    private JButton allButton;
+    private JButton STOPButton;
+    private JRadioButton idleONRadioButton;
     private int balance = 0;
     private double accountBalance = 0;
-    private boolean time = false;
 
-    private int multiply = 1;
+
+    private int multiplyClick = 1;
+    private int multiplyIdle = 0;
+    private int rateCount = 0;
+    boolean stop = false;
 
 
     public IdleGame() {
+
         Click.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
 
-                balance += multiply;
+                balance += multiplyClick;
                 counter.setText(String.valueOf(balance));
-                textField1.setText("+"+multiply);
+                textField1.setText("+" + multiplyClick);
 
             }
         });
         buyButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String a = a10TextField.getText();
+                String a = clickUpdatePrize.getText();
                 Integer i = Integer.parseInt(a);
-                String a1 = a0TextField.getText();
+                String a1 = clickUpdate.getText();
                 Integer i1 = Integer.parseInt(a1);
                 if (balance >= i) {
                     {
                         i1 = i1 + 1;
                         String a11 = String.valueOf(i1);
-                        a0TextField.setText(a11);
+                        clickUpdate.setText(a11);
                         balance = balance - i;
                     }
 
-                    multiply = multiply + 1;
+                    multiplyClick = multiplyClick + 1;
 
                     i = i * 2;
                     String b = String.valueOf(i);
-                    a10TextField.setText(b);
+                    clickUpdatePrize.setText(b);
                     counter.setText(String.valueOf(balance));
-                    textField1.setText("+"+multiply);
+                    textField1.setText("+" + multiplyClick);
 
                 }
 
@@ -71,11 +84,11 @@ public class IdleGame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Integer i = Integer.parseInt(depositText.getText());
-                if (balance >= i){
+                if (balance >= i) {
 
-                    accountBalance = Integer.parseInt(depositText.getText())+ accountBalance;
+                    accountBalance = Integer.parseInt(depositText.getText()) + accountBalance;
                     accountBalanceText.setText(String.valueOf(accountBalance));
-                    balance = balance-i;
+                    balance = balance - i;
                     counter.setText(String.valueOf(balance));
                     depositText.setText("");
                 }
@@ -84,21 +97,118 @@ public class IdleGame {
         OKButton1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                try {
+                    if (rateCount != 1 && Double.parseDouble(accountBalanceText.getText()) >= 0) {
+                        rate();
+                        int i =Integer.parseInt(accountBalanceText.getText());
+                        i -= i;
+                        accountBalanceText.setText(String.valueOf(i));
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Sorry, you added balance before...");
+                    }
+                } catch (Exception e1) {
 
-                finalRate.setText(String.valueOf(rate()));
+                }
+            }
+        });
+        Buy.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int i = Integer.parseInt(idleUpdatePrize.getText());
+                int idle = Integer.parseInt(idleUpdate.getText());
+                if (balance >= i) {
+                    idle = idle + 1;
+                    String s = String.valueOf(idle);
+                    idleUpdate.setText(s);
 
+                    balance = balance - i;
+                    counter.setText(String.valueOf(balance));
+                    i = i * 2;
+                    String s1 = String.valueOf(i);
+                    idleUpdatePrize.setText(s1);
+
+                    multiplyIdle = multiplyIdle + 1;
+                    idleCount.setText(String.valueOf("+" + multiplyIdle + "/s"));
+
+                }
+            }
+        });
+        STOPButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                stopNow();
+
+
+            }
+        });
+        allButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                double i = Double.parseDouble(accountBalanceText.getText());
+                double fin = Double.parseDouble(finalRate.getText());
+
+                finalRate.setText("");
+                i = i + fin;
+
+                accountBalanceText.setText(String.valueOf(i));
+                rateCount = 0;
+                stop = false;
             }
         });
     }
 
+    {
+
+        idleMachine();
+
+    }
+
+    public boolean stopNow() {
+        return stop = true;
+    }
+
+    public void idleMachine() {
+
+        Timer timer = new Timer();
+
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+
+                balance += multiplyIdle;
+
+                counter.setText(String.valueOf(balance));
+
+            }
+        }, 0, 1000);
+
+
+    }
+
     private double rate() {
-        double d = accountBalance;
-        Integer i = Integer.parseInt(interestRateText.getText());
-        System.out.println(i);
-        d = (int)d * ((i/100)+1);// ((Integer.parseInt(interestRateText.getText())/100)+1);
-        d= d * 1.02;
-        System.out.println(d);
-        return d ;
+        rateCount++;
+
+        Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask() {
+            double copyAcc = accountBalance;
+
+
+            @Override
+            public void run() {
+                if (stop == false) {
+                    double rate = Double.parseDouble(interestRateText.getText());
+                    rate = (rate / 100.0) + 1;
+
+                    double result = copyAcc * rate;
+                    copyAcc = result;
+                    finalRate.setText(String.valueOf(copyAcc));
+
+                }
+            }
+        }, 0, 1000);
+
+        return Double.parseDouble(finalRate.getText());
+
     }
 
     public static void main(String[] args) {
@@ -107,5 +217,6 @@ public class IdleGame {
         frame.setVisible(true);
         frame.setContentPane(new IdleGame().panel1);
         frame.pack();
+
     }
 }
